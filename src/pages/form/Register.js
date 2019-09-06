@@ -1,17 +1,60 @@
 import React from 'react'
-import { Card, Form, Icon, Input, Button, Checkbox, Radio, InputNumber, Select, Switch, DatePicker, TimePicker } from 'antd'
+import { Card, Form, Icon, message ,Input, Button, Checkbox, Radio, InputNumber, Select, Switch, DatePicker, TimePicker, Upload } from 'antd'
 import moment from 'moment';
 import TextArea from 'antd/lib/input/TextArea';
+import './form.less'
+
 const FormItem = Form.Item;
 const RadioGroup = Radio.Group;
 const Option = Select.Option;
 
 class Register extends React.Component{
 
+    state = {
+        loading: false,
+      };
+
     handleClick = () =>{
         let userInfo = this.props.form.getFieldsValue();
         console.log(userInfo);
     }
+    handleCancle = () =>{
+        this.props.form.resetFields();
+    }
+    getBase64 = (img, callback) =>{
+        const reader = new FileReader();
+        reader.addEventListener('load', () => callback(reader.result));
+        reader.readAsDataURL(img);
+    }
+
+    beforeUpload = (file) =>{
+        const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+        if (!isJpgOrPng) {
+          message.error('You can only upload JPG/PNG file!');
+        }
+        const isLt2M = file.size / 1024 / 1024 < 2;
+        if (!isLt2M) {
+          message.error('Image must smaller than 2MB!');
+        }
+        return isJpgOrPng && isLt2M;
+      }
+
+    handleChange = info => {
+        if (info.file.status === 'uploading') {
+          this.setState({ loading: true });
+          return;
+        }
+        if (info.file.status === 'done') {
+          // Get this url from response in real world.
+          this.getBase64(info.file.originFileObj, imageUrl =>
+            this.setState({
+              userImg:imageUrl,
+              loading: false,
+            }),
+          );
+        }
+      };
+
     render(){
         const { getFieldDecorator } = this.props.form;
         const formItemLayout = {
@@ -24,12 +67,28 @@ class Register extends React.Component{
                 sm:12
             }
         } 
+        const offsetLayout = {
+            wrapperCol:{
+                xs:24,
+                sm:{
+                    span:12,
+                    offset:8
+                }
+            }
+        }
         const rowObject = {
             minRows: 2, maxRows: 6
         }   
+        const { imageUrl } = this.state;
+        const uploadButton = (
+            <div>
+              <Icon type={this.state.loading ? 'loading' : 'plus'} />
+              <div className="ant-upload-text">Upload</div>
+            </div>
+          );
         return (
             <div>
-               <Card title="内联表单">
+               <Card title="注册表单">
                     <Form >
                         <FormItem label="用户名" {...formItemLayout}>
                             {
@@ -143,26 +202,38 @@ class Register extends React.Component{
                         </FormItem>         
                         <FormItem label="早起时间" {...formItemLayout}>
                             {
-                                getFieldDecorator('time')(
-                                    <TimePicker/>
+                                getFieldDecorator('time')(<TimePicker/>)
+                            }
+                        </FormItem>
+                        <FormItem label="头像" {...formItemLayout}>
+                            {
+                                getFieldDecorator('userImg', {
+                                    initialValue: '北京市海淀区奥林匹克公园'
+                                })(
+                                    <Upload
+                                        name="avatar"
+                                        listType="picture-card"
+                                        className="avatar-uploader"
+                                        showUploadList={false}
+                                        action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+                                        beforeUpload={this.beforeUpload}
+                                        onChange={this.handleChange}
+                                    >
+                                        {this.state.userImg ? <img src={this.state.userImg} alt="avatar" style={{ width: '100%' }} /> : uploadButton}
+                                    </Upload>
                                 )
                             }
-                        </FormItem>
-
-
-                        <FormItem>
+                        </FormItem>        
+                        <FormItem {...offsetLayout}>
                             {
-                               getFieldDecorator('remember',{
-                                valuePropName:'checked',
-                                initialValue: true
-                               })(
-                                <Checkbox>记住密码</Checkbox>
-                               ) 
+                                getFieldDecorator('xxxx')(
+                                   <Checkbox>我已阅读过<a href="#">慕课协议</a></Checkbox>
+                                )
                             }
-                            <a href="#" style={{float:'right'}}>忘记密码</a>
-                        </FormItem>
-                        <FormItem>
+                        </FormItem>            
+                        <FormItem {...offsetLayout}>
                             <Button type="primary" onClick={this.handleClick}>注册</Button>
+                            <Button type="primary" onClick={this.handleCancle}>重置</Button>
                         </FormItem>
                     </Form>
                 </Card>

@@ -1,5 +1,4 @@
 import JsonP from 'jsonp';
-import { resolve, reject } from 'q';
 
 export default class Axios{
     static jsonp(opts){
