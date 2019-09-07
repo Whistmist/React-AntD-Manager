@@ -79,7 +79,6 @@ class Register extends React.Component{
         const rowObject = {
             minRows: 2, maxRows: 6
         }   
-        const { imageUrl } = this.state;
         const uploadButton = (
             <div>
               <Icon type={this.state.loading ? 'loading' : 'plus'} />
